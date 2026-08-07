@@ -1,0 +1,55 @@
+folder structure somewhat eta follow korbo
+
+
+stock-exchange/
+│
+├── backend/
+│   ├── venv/
+│   ├── app/
+│   │   ├── main.py
+│   │   │
+│   │   ├── api/
+│   │   │   ├── auth.py
+│   │   │   ├── users.py
+│   │   │   ├── stocks.py
+│   │   │   ├── orders.py
+│   │   │   └── portfolio.py
+│   │   │
+│   │   ├── services/
+│   │   │   ├── matching_engine.py
+│   │   │   ├── order_service.py
+│   │   │   └── portfolio_service.py
+│   │   │
+│   │   ├── db/
+│   │   │   ├── connection.py
+│   │   │   └── queries/
+│   │   │
+│   │   ├── models/
+│   │   │   └── schemas.py
+│   │   │
+│   │   └── config.py
+│   │
+│   ├── .env
+│   ├── requirements.txt
+│   └── run.py
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── layouts/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   │   └── api.ts
+│   │   ├── types/
+│   │   ├── context/
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   │
+│   ├── .env
+│   ├── package.json
+│   └── vite.config.ts
+│
+└── README.md
+
+

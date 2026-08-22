@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.routes.auth import router as auth_router
+
 from app.db import get_connection
 
 app = FastAPI(title="Stock Exchange Simulation")
@@ -13,17 +15,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.get("/api/health")
-def health_check():
-    return {"status": "ok"}
+app.include_router(auth_router)
 
 
-@app.get("/api/db-test")
-def database_test():
-    with get_connection() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT 1")
-            result = cursor.fetchone()
-
-    return {"database": result[0]}
+@app.get("/")
+def root():
+    return {"message": "Stock Exchange API is running"}

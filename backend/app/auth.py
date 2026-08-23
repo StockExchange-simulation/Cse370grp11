@@ -1,14 +1,23 @@
 import os
+from pathlib import Path
 
+from dotenv import load_dotenv
 import jwt
-
 from fastapi import HTTPException, Request
 
+
+# backend/.env
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGORITHM = "HS256"
 
 
+if not JWT_SECRET:
+    raise RuntimeError("JWT_SECRET is not set")
+
+    
 def create_session(user_id: int, role: str) -> str:
     payload = {
         "user_id": user_id,

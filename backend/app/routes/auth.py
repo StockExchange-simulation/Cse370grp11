@@ -129,4 +129,96 @@ def google_login(data: GoogleLoginRequest):
     )
 
     return response
+
+
+
+
+@router.get("/me")
+def get_me(request: Request):
+
+    session = get_current_user(request)
+
+    user_id = session["user_id"]
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+
+            cur.execute(
+                """
+                SELECT
+                    user_id,
+                    first_name,
+                    middle_name,
+                    last_name,
+                    email,
+                    u_role,
+                    balance
+                FROM users
+                WHERE user_id = %s
+                """,
+                (user_id,),
+            )
+
+            user = cur.fetchone()
+
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="User not found",
+        )
+
+    return {
+        "user_id": user[0],
+        "first_name": user[1],
+        "middle_name": user[2],
+        "last_name": user[3],
+        "email": user[4],
+        "role": user[5],
+        "balance": user[6],
+    }
+
+
+
             
+@router.post("/logout")
+def logout():
+
+    response = JSONResponse({
+        "message": "Logout successful"
+    })
+
+    response.delete_cookie(
+        key="session",
+        httponly=True,
+        secure=False,
+        samesite="lax",
+    )
+
+    return response
+
+
+
+
+
+
+# app/
+# └── routes/
+#     └── auth.py
+
+#         POST /api/auth/google
+#               │
+#               ├── Verify Google
+#               ├── Find/create user
+#               ├── Create JWT
+#               └── Set session cookie
+
+#         GET /api/auth/me
+#               │
+#               ├── Read session cookie
+#               ├── Verify JWT
+#               ├── Get user_id
+#               └── Get user from DB
+
+#         POST /api/auth/logout
+#               │
+#               └── Delete session cookie

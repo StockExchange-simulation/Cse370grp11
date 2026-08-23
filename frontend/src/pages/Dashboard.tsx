@@ -3,6 +3,8 @@ import { Wallet, Banknote, TrendingUp, Plus, ArrowRight } from "lucide-react";
 import { StatCard } from "../components/StatCard";
 import { PerformanceChart } from "../components/PerformanceChart";
 import { MarketTable } from "../components/MarketTable";
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import {
   Card,
   Eyebrow,
@@ -15,14 +17,41 @@ import {
   orders,
   watchlistSymbols,
   portfolioSeries,
-  currentUser,
   usd,
 } from "../lib/data";
 
 export function Dashboard() {
   const navigate = useNavigate();
-  // TODO FastAPI: this whole screen should hydrate from GET /api/dashboard
-  // (portfolio summary + watchlist + recent orders) for the logged-in user.
+  const { user } = useAuth(); //has name, balance, email, id, is_admin, created_at
+  const [summary, setSummary] = useState<{
+    portfolio_value: number;
+    total_return: number;
+    return_percent: number;
+  } | null>(null);
+
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  useEffect(() => {
+    loadSummary();
+  }, []);
+
+  async function loadSummary() {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/portfolio/summary`,
+        { credentials: "include" },
+      );
+      const data = await res.json();
+      setSummary(data);
+    } catch (error) {
+      console.error("Failed to load portfolio summary:", error);
+    }
+  }
   const watchlist = marketRows.filter((r) =>
     watchlistSymbols.includes(r.symbol),
   );
@@ -31,9 +60,9 @@ export function Dashboard() {
     <>
       <div className="mb-7 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <Eyebrow>Tuesday, August 20, 2026</Eyebrow>
+          <Eyebrow>{today}</Eyebrow>
           <h1 className="text-[clamp(25px,3vw,32px)] font-bold leading-tight tracking-tight">
-            Good morning, {currentUser.name.split(" ")[0]}
+            Good morning, {user?.first_name}
           </h1>
           <p className="mt-2 text-sm text-muted">
             Here is your market overview for today.
@@ -47,21 +76,33 @@ export function Dashboard() {
       <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Portfolio value"
-          value="$12,840.56"
-          detail="+$284.20 (2.26%) today"
+          value={summary ? usd(summary.portfolio_value) : "..."}
+          detail={
+            summary
+              ? `${summary.total_return >= 0 ? "+" : ""}${usd(summary.total_return)} (${summary.return_percent.toFixed(2)}%) all time`
+              : "Loading..."
+          }
           icon={Wallet}
         />
         <StatCard
           label="Available cash"
-          value="$4,250.00"
+          value={user ? usd(user.balance) : "..."}
           detail="Ready to invest"
           icon={Banknote}
           tone="teal"
         />
         <StatCard
           label="Total return"
-          value="+$1,840.56"
-          detail="+16.72% all time"
+          value={
+            summary
+              ? `${summary.total_return >= 0 ? "+" : ""}${usd(summary.total_return)}`
+              : "..."
+          }
+          detail={
+            summary
+              ? `${summary.return_percent >= 0 ? "+" : ""}${summary.return_percent.toFixed(2)}% all time`
+              : "Loading..."
+          }
           icon={TrendingUp}
           tone="violet"
         />
@@ -84,11 +125,17 @@ export function Dashboard() {
           </div>
           <div className="my-5 flex items-center gap-4">
             <strong className="text-[26px] font-bold tracking-tight">
-              $12,840.56
+              {summary ? usd(summary.portfolio_value) : "..."}
             </strong>
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-teal">
-              <TrendingUp size={15} /> +16.72%
-            </span>
+            {summary ? (
+              <span
+                className={`inline-flex items-center gap-1 text-xs font-bold ${summary.return_percent >= 0 ? "text-teal" : "text-red-500"}`}
+              >
+                <TrendingUp size={15} />
+                {summary.return_percent >= 0 ? "+" : ""}
+                {summary.return_percent.toFixed(2)}%
+              </span>
+            ) : null}
           </div>
           <PerformanceChart series={portfolioSeries} />
         </Card>

@@ -12,13 +12,7 @@ import {
   AssetMark,
   StatusBadge,
 } from "../components/ui";
-import {
-  marketRows,
-  orders,
-  watchlistSymbols,
-  portfolioSeries,
-  usd,
-} from "../lib/data";
+import { portfolioSeries, usd } from "../lib/data";
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -29,6 +23,17 @@ export function Dashboard() {
     return_percent: number;
   } | null>(null);
 
+  const [recentOrders, setRecentOrders] = useState<
+    {
+      id: number;
+      side: string;
+      symbol: string;
+      shares: number;
+      date: string;
+      total: number;
+      status: string;
+    }[]
+  >([]);
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -52,9 +57,63 @@ export function Dashboard() {
       console.error("Failed to load portfolio summary:", error);
     }
   }
-  const watchlist = marketRows.filter((r) =>
-    watchlistSymbols.includes(r.symbol),
-  );
+
+  useEffect(() => {
+    loadRecentOrders();
+  }, []);
+
+  async function loadRecentOrders() {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/orders/recent`,
+        { credentials: "include" },
+      );
+      const data = await res.json();
+      setRecentOrders(data);
+    } catch (error) {
+      console.error("Failed to load recent orders:", error);
+    }
+  }
+
+  const [watchlist, setWatchlist] = useState<
+    {
+      symbol: string;
+      name: string;
+      price: number;
+      changePct: number;
+      volume: string;
+    }[]
+  >([]);
+
+  useEffect(() => {
+    loadWatchlist();
+  }, []);
+
+  async function loadWatchlist() {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/watchlist/recent`,
+        { credentials: "include" },
+      );
+      const data = await res.json();
+      setWatchlist(data);
+    } catch (error) {
+      console.error("Failed to load watchlist:", error);
+    }
+  }
+
+  async function handleRemoveFromWatchlist(symbol: string) {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/watchlist/${symbol}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      setWatchlist((current) => current.filter((row) => row.symbol !== symbol));
+    } catch (error) {
+      console.error("Failed to remove from watchlist:", error);
+    }
+  }
 
   return (
     <>
@@ -156,7 +215,7 @@ export function Dashboard() {
             </button>
           </div>
           <div className="mt-3">
-            {orders.slice(0, 4).map((order) => (
+            {recentOrders.map((order) => (
               <div
                 key={order.id}
                 className="flex items-center gap-2.5 border-b border-line/60 py-3 last:border-0"
@@ -200,8 +259,9 @@ export function Dashboard() {
           </div>
           <MarketTable
             rows={watchlist}
-            actionLabel="View"
-            onAction={() => navigate("/markets")}
+            actionLabel="Trade"
+            onAction={(symbol) => navigate(`/trade/${symbol}`)}
+            onRemove={handleRemoveFromWatchlist}
           />
         </Card>
       </div>

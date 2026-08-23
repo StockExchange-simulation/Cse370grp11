@@ -69,3 +69,46 @@ def get_portfolio_summary(request: Request):
 # return_percent — guarded against divide-by-zero for a user with no holdings yet.
 # float(...) — Postgres DECIMAL types come back as Python Decimal objects,
 #  which don't serialize to JSON cleanly by default; converting to float avoids errors.
+
+
+
+@router.get("/holdings")
+def get_holdings(request: Request):
+
+    session = get_current_user(request)
+    user_id = session["user_id"]
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+
+            cur.execute(
+                """
+                SELECT
+                    stock.symbol,
+                    company.company_name,
+                    holdings.quantity,
+                    holdings.avg_price,
+                    stock.current_price
+                FROM holdings
+                JOIN stock ON stock.stock_id = holdings.stock_id
+                JOIN company ON company.company_id = stock.company_id
+                WHERE holdings.user_id = %s
+                  AND holdings.quantity > 0
+                """,
+                (user_id,),
+            )
+
+            rows = cur.fetchall()
+
+    result = []
+
+    for symbol, company_name, quantity, avg_price, current_price in rows:
+        result.append({
+            "symbol": symbol,
+            "name": company_name,
+            "shares": quantity,
+            "avgCost": float(avg_price),
+            "price": float(current_price),
+        })
+
+    return result

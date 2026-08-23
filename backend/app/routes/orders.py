@@ -59,14 +59,31 @@ def get_recent_orders(request: Request):
 
 
 @router.get("/all")
-def get_all_orders(request: Request):
+def get_all_orders(request: Request, page: int = 1, page_size: int = 10):
 
     session = get_current_user(request)
     user_id = session["user_id"]
 
+    if page < 1:
+        page = 1
+
+    offset = (page - 1) * page_size
+
     with get_connection() as conn:
         with conn.cursor() as cur:
 
+            # Total count, for calculating how many pages exist
+            cur.execute(
+                """
+                SELECT COUNT(*)
+                FROM orders
+                WHERE user_id = %s
+                """,
+                (user_id,),
+            )
+            total_count = cur.fetchone()[0]
+
+            # Just this page's worth of rows
             cur.execute(
                 """
                 SELECT
@@ -81,18 +98,19 @@ def get_all_orders(request: Request):
                 JOIN stock ON stock.stock_id = orders.stock_id
                 WHERE orders.user_id = %s
                 ORDER BY orders.created_at DESC
+                LIMIT %s OFFSET %s
                 """,
-                (user_id,),
+                (user_id, page_size, offset),
             )
 
             rows = cur.fetchall()
 
-    result = []
+    items = []
 
     for row in rows:
         order_id, order_type, symbol, quantity, price, status, created_at = row
 
-        result.append({
+        items.append({
             "id": order_id,
             "side": order_type,
             "symbol": symbol,
@@ -102,4 +120,9 @@ def get_all_orders(request: Request):
             "status": status,
         })
 
-    return result
+    return {
+        "items": items,
+        "total_count": total_count,
+        "page": page,
+        "page_size": page_size,
+    }

@@ -15,6 +15,7 @@ import { StockDetail } from "./pages/StockDetail";
 import { AuthProvider } from "./context/AuthContext";
 import { RequireAuth } from "./components/RequireAuth";
 import { RequireAdmin } from "./components/RequireAdmin";
+import { ProfileEdit } from './pages/ProfileEdit'
 
 /*
   App routing. Every page lives under the AppShell layout (top bar + sidebar).
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="watchlist" element={<Markets watchlistOnly />} />
           <Route path="dividends" element={<Activity kind="dividends" />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="profile/edit" element={<ProfileEdit />} />
           <Route
             path="admin"
             element={

@@ -168,37 +168,7 @@ export function Dashboard() {
       </div>
 
       <div className="mb-4 grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(290px,0.9fr)]">
-        <Card>
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <Eyebrow>Your portfolio</Eyebrow>
-              <h2 className="text-[17px] font-semibold tracking-tight">
-                Performance
-              </h2>
-            </div>
-            <select className="rounded-md border border-line bg-canvas px-2.5 py-2 text-xs text-ink outline-none">
-              <option>6 months</option>
-              <option>1 year</option>
-              <option>All time</option>
-            </select>
-          </div>
-          <div className="my-5 flex items-center gap-4">
-            <strong className="text-[26px] font-bold tracking-tight">
-              {summary ? usd(summary.portfolio_value) : "..."}
-            </strong>
-            {summary ? (
-              <span
-                className={`inline-flex items-center gap-1 text-xs font-bold ${summary.return_percent >= 0 ? "text-teal" : "text-red-500"}`}
-              >
-                <TrendingUp size={15} />
-                {summary.return_percent >= 0 ? "+" : ""}
-                {summary.return_percent.toFixed(2)}%
-              </span>
-            ) : null}
-          </div>
-          <PerformanceChart series={portfolioSeries} />
-        </Card>
-
+        
         <Card>
           <div className="flex items-start justify-between gap-3">
             <div>

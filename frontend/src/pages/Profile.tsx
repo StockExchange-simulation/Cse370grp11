@@ -1,15 +1,16 @@
-import { Card, PageTitle, OutlineButton, StatusBadge } from '../components/ui'
-import { currentUser } from '../lib/data'
+import { useNavigate } from 'react-router-dom'
+import { Card, PageTitle, OutlineButton } from '../components/ui'
+import { useAuth } from '../context/AuthContext'
 
 const settings = [
   { title: 'Personal information', desc: 'Update your name, email, and phone number' },
   { title: 'Security', desc: 'Password, two-factor authentication, and sessions' },
-  { title: 'Notifications', desc: 'Choose what updates you receive' },
-  { title: 'Linked bank accounts', desc: 'Manage deposits and withdrawals' },
 ]
 
 export function Profile() {
-  // TODO FastAPI: GET /api/me for the profile; PATCH /api/me to save edits.
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
   return (
     <>
       <PageTitle
@@ -20,18 +21,17 @@ export function Profile() {
 
       <Card className="mb-4 flex flex-wrap items-center gap-4">
         <span className="grid h-14 w-14 place-items-center rounded-full bg-accent-soft text-lg font-bold text-accent">
-          {currentUser.initials}
+          {user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}
         </span>
         <div className="flex-1">
-          <h2 className="text-[17px] font-semibold tracking-tight">{currentUser.name}</h2>
-          <p className="text-sm text-muted">{currentUser.email}</p>
-          {currentUser.verified ? (
-            <span className="mt-1.5 inline-block">
-              <StatusBadge status="Verified" />
-            </span>
-          ) : null}
+          <h2 className="text-[17px] font-semibold tracking-tight">
+            {user?.first_name} {user?.last_name}
+          </h2>
+          <p className="text-sm text-muted">{user?.email}</p>
         </div>
-        <OutlineButton>Edit profile</OutlineButton>
+        <OutlineButton onClick={() => navigate('/profile/edit')}>
+          Edit profile
+        </OutlineButton>
       </Card>
 
       <Card>

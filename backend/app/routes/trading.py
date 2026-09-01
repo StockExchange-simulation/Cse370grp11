@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
+from typing import Optional
 
 from app.auth import get_current_user
 from app.db import get_connection
@@ -11,10 +12,10 @@ router = APIRouter(prefix="/api/trading", tags=["Trading"])
 
 class PlaceOrderRequest(BaseModel):
     symbol: str
-    side: str  # 'buy' or 'sell'
-    execution_type: str  # 'market' or 'limit'
+    side: str
+    execution_type: str
     quantity: int
-    limit_price: float | None = None
+    limit_price: Optional[float] = None
 
 
 @router.post("/orders")
@@ -233,6 +234,14 @@ def place_order(data: PlaceOrderRequest, request: Request):
                 cur.execute("UPDATE users SET balance = balance - %s WHERE user_id = %s", (trade_value, buyer_id))
                 cur.execute("UPDATE users SET balance = balance + %s WHERE user_id = %s", (trade_value, seller_id))
 
+                cur.execute(
+                    "UPDATE stock SET current_price = %s WHERE stock_id = %s",
+                    (trade_price, stock_id),
+                )
+                cur.execute(
+                    "INSERT INTO price_history (stock_id, price) VALUES (%s, %s)",
+                    (stock_id, trade_price),
+                )
                 # Update the resting (candidate) order
                 cand_remaining = cand_qty - trade_qty
                 cand_status = "completed" if cand_remaining == 0 else "partially_completed"

@@ -56,7 +56,7 @@ export function Portfolio() {
         <StatCard
           label="Market value"
           value={usd(marketValue)}
-          detail="+$284.20 today"
+          detail=""
           icon={Wallet}
         />
         <StatCard

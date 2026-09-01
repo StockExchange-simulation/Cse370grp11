@@ -198,7 +198,39 @@ def logout():
 
 
 
+class UpdateProfileRequest(BaseModel):
+    first_name: str
+    middle_name: str | None = None
+    last_name: str
 
+@router.patch("/me")
+def update_me(data: UpdateProfileRequest, request: Request):
+
+    session = get_current_user(request)
+    user_id = session["user_id"]
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+
+            cur.execute(
+                """
+                UPDATE users
+                SET first_name = %s,
+                    middle_name = %s,
+                    last_name = %s
+                WHERE user_id = %s
+                """,
+                (
+                    data.first_name,
+                    data.middle_name,
+                    data.last_name,
+                    user_id,
+                ),
+            )
+
+        conn.commit()
+
+    return {"message": "Profile updated"}
 
 
 # app/

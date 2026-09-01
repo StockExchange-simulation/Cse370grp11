@@ -9,6 +9,7 @@ from app.db import get_connection
 from app.routes.watchlist import router as watchlist_router
 from app.routes.markets import router as markets_router
 from app.routes.dividends import router as dividends_router
+from app.routes.trading import router as trading_router
 app = FastAPI(title="Stock Exchange Simulation")
 
 FRONTEND_URL = os.getenv("FRONTEND_URL")
@@ -32,6 +33,7 @@ app.include_router(orders_router)
 app.include_router(watchlist_router)
 app.include_router(markets_router)
 app.include_router(dividends_router)
+app.include_router(trading_router)
 @app.get("/")
 def root():
     return {"message": "Stock Exchange API is running"}

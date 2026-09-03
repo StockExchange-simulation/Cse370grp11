@@ -1,32 +1,25 @@
-# React + TypeScript + Vite
+# TradeSphere frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The frontend is a Vite React application. For complete database, Google OAuth, backend, and frontend setup, see the [project README](../README.md).
 
-Currently, two official plugins are available:
+## Local development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+From this directory:
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+cp .env.example .env
+pnpm install
+pnpm dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The development server runs at http://localhost:5173. Set `VITE_API_URL` to the URL of the FastAPI server and set `VITE_GOOGLE_CLIENT_ID` to the Google Web client ID configured for the backend.
+
+## Scripts
+
+```bash
+pnpm dev       # Start Vite with hot reload
+pnpm build     # Type-check and create a production build
+pnpm preview   # Serve the production build locally
+```
+
+Do not put private credentials in `VITE_*` variables. Vite exposes these values to browser code at build time.
